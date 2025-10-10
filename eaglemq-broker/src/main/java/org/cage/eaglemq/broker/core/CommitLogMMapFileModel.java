@@ -115,6 +115,8 @@ public class CommitLogMMapFileModel {
         }
     }
 
+
+
 //    private CommitLogFilePath createNewCommitLogFile(String topicName, CommitLogModel commitLogModel) {
 //        String newFileName = LogFileNameUtil.incrCommitLogFileName(commitLogModel.getFileName());
 //        String newFilePath = LogFileNameUtil.buildCommitLogFilePath(topicName, newFileName);
