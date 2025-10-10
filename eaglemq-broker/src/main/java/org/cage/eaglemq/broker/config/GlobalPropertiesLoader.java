@@ -3,6 +3,7 @@ package org.cage.eaglemq.broker.config;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.cage.eaglemq.broker.cache.CommonCache;
+import org.cage.eaglemq.broker.enums.QueueAllocationStrategyEnum;
 import org.cage.eaglemq.common.constants.BrokerConstants;
 
 import java.io.File;
@@ -35,7 +36,12 @@ public class GlobalPropertiesLoader {
         Properties properties = new Properties();
         properties.load(Files.newInputStream(new File(brokerPropertiesPath).toPath()));
 
-        // todo 读取其他属性
+        String strategy = properties.getProperty("broker.queueAllocation.strategy");
+        QueueAllocationStrategyEnum queueAllocationStrategyEnum = QueueAllocationStrategyEnum.find(strategy);
+        if (queueAllocationStrategyEnum == null) {
+            throw new IllegalArgumentException("broker.queueAllocation.strategy 配置有误");
+        }
+        globalProperties.setBrokerQueueAllocationStrategy(strategy);
         CommonCache.setGlobalProperties(globalProperties);
     }
 }

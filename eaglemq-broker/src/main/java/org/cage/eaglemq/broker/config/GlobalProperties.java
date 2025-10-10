@@ -16,4 +16,10 @@ public class GlobalProperties {
 
     // 全局环境变量地址
     private String eagleMqHome;
+
+    // queue Id 的分配策略
+    /**
+     * @see org.cage.eaglemq.broker.enums.QueueAllocationStrategyEnum
+     */
+    private String brokerQueueAllocationStrategy;
 }

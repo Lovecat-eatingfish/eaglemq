@@ -59,7 +59,8 @@ public class CommitLogMMapFileModel {
      * @param startOffset 开始映射的offset
      * @param mappedSize  映射的体积 (byte)
      */
-    public void loadFileInMMap(String topicName, int startOffset, int mappedSize) throws IOException {
+    public void loadFileInMMap(String topicName, int startOffset, int mappedSize, SendMessageStrategy strategy) throws IOException {
+        this.sendMessageStrategy = strategy;
         this.topic = topicName;
         String filePath = getLatestCommitLogFile(topicName);
         this.doMMap(filePath, startOffset, mappedSize);
