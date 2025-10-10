@@ -15,6 +15,9 @@ import org.cage.eaglemq.common.dto.MessageDTO;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * ClassName: BrokerStartUp
@@ -77,13 +80,11 @@ public class BrokerStartUp {
         CommonCache.setConsumeQueueConsumeHandler(consumeQueueConsumeHandler);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         initProperties();
 
 
-//        CommitLogAppendHandler commitLogAppendHandler = CommonCache.getCommitLogAppendHandler();
-//
-        String topic = "created_order_topic";
+
 //        for (int i = 0; i < 10; i++) {
 //            MessageDTO messageDTO = new MessageDTO();
 //            messageDTO.setProducerId("producerA");
@@ -95,6 +96,10 @@ public class BrokerStartUp {
 //        }
 
 
+    }
+
+    public void testConsumeMessage() {
+        String topic = "created_order_topic";
         String consumeGroup = "test-consume-group";
         int queueId = 0;
         ConsumeQueueConsumeHandler consumeQueueConsumeHandler = CommonCache.getConsumeQueueConsumeHandler();
@@ -106,7 +111,7 @@ public class BrokerStartUp {
         List<ConsumeMsgCommitLogDTO> result = consumeQueueConsumeHandler.consume(consumeQueueConsumeReqModel);
         for (ConsumeMsgCommitLogDTO consumeMsgCommitLogDTO : result) {
             System.out.println("consumeMsgCommitLogDTO==> " + consumeMsgCommitLogDTO);
-            consumeQueueConsumeHandler.ack(topic,consumeGroup,  queueId);
+            consumeQueueConsumeHandler.ack(topic, consumeGroup, queueId);
         }
         System.out.println("总共的数量： " + result.size());
     }
