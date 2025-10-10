@@ -49,7 +49,7 @@ public class EagleMqTopicLoader {
             while (true) {
                 try {
                     TimeUnit.SECONDS.sleep(BrokerConstants.DEFAULT_REFRESH_MQ_TOPIC_TIME_STEP);
-                    log.info("【startRefreshEagleMqTopicInfoTask】 =》开始同步topic的数据到磁盘中");
+//                    log.info("【startRefreshEagleMqTopicInfoTask】 =》开始同步topic的数据到磁盘中");
                     List<EagleMqTopicModel> eagleMqTopicModelList = CommonCache.getEagleMqTopicModelList();
                     FileContentUtil.overWriteToFile(eagleMqTopicPath, JSON.toJSONString(eagleMqTopicModelList));
                 } catch (InterruptedException e) {

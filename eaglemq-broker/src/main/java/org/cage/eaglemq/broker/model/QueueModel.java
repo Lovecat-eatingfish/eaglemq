@@ -26,4 +26,9 @@ public class QueueModel {
     private Integer offsetLimit;
     // 当前偏移量的值
     private AtomicInteger latestOffset;
+
+    // 剩余的容量
+    public int remainCapacity() {
+        return this.getOffsetLimit() - this.getLatestOffset().get();
+    }
 }

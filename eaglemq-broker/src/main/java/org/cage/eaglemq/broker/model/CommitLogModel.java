@@ -20,8 +20,12 @@ public class CommitLogModel {
     private String fileName;
 
     // 写入的最大offset
-    private Long offsetLimit;
+    private Integer offsetLimit;
 
     // 入的最新offset
     private AtomicInteger offset;
+
+    public int remainCapacity() {
+        return this.offsetLimit - this.offset.get();
+    }
 }
