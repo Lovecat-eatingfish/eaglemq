@@ -98,21 +98,21 @@ public class BrokerStartUp {
 
     }
 
-    public void testConsumeMessage() {
-        String topic = "created_order_topic";
-        String consumeGroup = "test-consume-group";
-        int queueId = 0;
-        ConsumeQueueConsumeHandler consumeQueueConsumeHandler = CommonCache.getConsumeQueueConsumeHandler();
-        ConsumeQueueConsumeReqModel consumeQueueConsumeReqModel = new ConsumeQueueConsumeReqModel();
-        consumeQueueConsumeReqModel.setTopic(topic);
-        consumeQueueConsumeReqModel.setQueueId(queueId);
-        consumeQueueConsumeReqModel.setConsumeGroup(consumeGroup);
-        consumeQueueConsumeReqModel.setBatchSize(30);
-        List<ConsumeMsgCommitLogDTO> result = consumeQueueConsumeHandler.consume(consumeQueueConsumeReqModel);
-        for (ConsumeMsgCommitLogDTO consumeMsgCommitLogDTO : result) {
-            System.out.println("consumeMsgCommitLogDTO==> " + consumeMsgCommitLogDTO);
-            consumeQueueConsumeHandler.ack(topic, consumeGroup, queueId);
-        }
-        System.out.println("总共的数量： " + result.size());
-    }
+//    public void testConsumeMessage() {
+//        String topic = "created_order_topic";
+//        String consumeGroup = "test-consume-group";
+//        int queueId = 0;
+//        ConsumeQueueConsumeHandler consumeQueueConsumeHandler = CommonCache.getConsumeQueueConsumeHandler();
+//        ConsumeQueueConsumeReqModel consumeQueueConsumeReqModel = new ConsumeQueueConsumeReqModel();
+//        consumeQueueConsumeReqModel.setTopic(topic);
+//        consumeQueueConsumeReqModel.setQueueId(queueId);
+//        consumeQueueConsumeReqModel.setConsumeGroup(consumeGroup);
+//        consumeQueueConsumeReqModel.setBatchSize(30);
+//        List<ConsumeMsgCommitLogDTO> result = consumeQueueConsumeHandler.consume(consumeQueueConsumeReqModel);
+//        for (ConsumeMsgCommitLogDTO consumeMsgCommitLogDTO : result) {
+//            System.out.println("consumeMsgCommitLogDTO==> " + consumeMsgCommitLogDTO);
+//            consumeQueueConsumeHandler.ack(topic, consumeGroup, queueId);
+//        }
+//        System.out.println("总共的数量： " + result.size());
+//    }
 }

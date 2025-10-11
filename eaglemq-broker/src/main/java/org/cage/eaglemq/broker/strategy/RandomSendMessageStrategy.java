@@ -27,4 +27,9 @@ public class RandomSendMessageStrategy implements SendMessageStrategy{
         // 返回一个从0到totalQueueId(不包括)的随机整数
         return random.nextInt(totalQueueId);
     }
+
+    @Override
+    public int getQueueId(String key) {
+        return 0;
+    }
 }

@@ -14,4 +14,7 @@ import org.cage.eaglemq.broker.model.EagleMqTopicModel;
 public interface SendMessageStrategy {
 
     int getQueueId();
+
+    // 这个方法是给 hash 策略使用的 ， 因为这个 jdk8 不能有default 的实现，
+    int getQueueId(String key);
 }

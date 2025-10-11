@@ -28,4 +28,9 @@ public class PollingSendMessageStrategy implements SendMessageStrategy {
     public int getQueueId() {
         return this.count.getAndIncrement() % eagleMqTopicModel.getQueueList().size();
     }
+
+    @Override
+    public int getQueueId(String key) {
+        return 0;
+    }
 }

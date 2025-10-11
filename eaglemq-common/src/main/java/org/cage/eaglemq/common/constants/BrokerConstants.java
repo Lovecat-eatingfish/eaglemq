@@ -57,4 +57,8 @@ public class BrokerConstants {
     //    private int retryTime;
     public static final int CONSUME_QUEUE_EACH_MSG_SIZE = 16;
 
+
+    public static final String NAME_SERVER_CONFIG_PATH = "/config/nameserver.properties";
+
+    public static final short DEFAULT_MAGIC_NUM = 17671;
 }

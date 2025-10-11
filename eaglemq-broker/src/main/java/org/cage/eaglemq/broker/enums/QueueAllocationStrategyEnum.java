@@ -18,7 +18,8 @@ import java.util.Arrays;
 @AllArgsConstructor
 public enum QueueAllocationStrategyEnum {
     RANDOM("random", "随机"),
-    POLLING("polling", "轮询")
+    POLLING("polling", "轮询"),
+    HASH("hash", "哈希")
     ;
     private final String strategy;
     private  final String desc;
