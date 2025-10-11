@@ -3,6 +3,8 @@ package org.cage.eaglemq.broker.cache;
 import org.cage.eaglemq.broker.config.GlobalProperties;
 import org.cage.eaglemq.broker.core.*;
 import org.cage.eaglemq.broker.model.*;
+import org.cage.eaglemq.broker.netty.nameserver.HeartBeatTaskManager;
+import org.cage.eaglemq.broker.netty.nameserver.NameServerClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +42,31 @@ public class CommonCache {
     //  所有消费者的offset 模型
     private static ConsumeQueueOffsetModel consumeQueueOffsetModel = new ConsumeQueueOffsetModel();
 
+    // ack 和 consume 高层面方法
     private static ConsumeQueueConsumeHandler consumeQueueConsumeHandler;
+
+    // broker 连接name server 的客户端
+    private static NameServerClient nameServerClient = new NameServerClient();
+
+    // broker 的心跳任务管理者  一个broker 只有一个  一个broker 之和一个， 直接通过static 来控制个数
+    private static HeartBeatTaskManager heartBeatTaskManager = new HeartBeatTaskManager();
+
+
+    public static HeartBeatTaskManager getHeartBeatTaskManager() {
+        return heartBeatTaskManager;
+    }
+
+    public static void setHeartBeatTaskManager(HeartBeatTaskManager heartBeatTaskManager) {
+        CommonCache.heartBeatTaskManager = heartBeatTaskManager;
+    }
+
+    public static NameServerClient getNameServerClient() {
+        return nameServerClient;
+    }
+
+    public static void setNameServerClient(NameServerClient nameServerClient) {
+        CommonCache.nameServerClient = nameServerClient;
+    }
 
     public static ConsumeQueueConsumeHandler getConsumeQueueConsumeHandler() {
         return consumeQueueConsumeHandler;

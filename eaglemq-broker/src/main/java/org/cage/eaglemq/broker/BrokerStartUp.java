@@ -13,6 +13,7 @@ import org.cage.eaglemq.common.dto.ConsumeMsgCommitLogDTO;
 import org.cage.eaglemq.common.dto.MessageDTO;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -80,23 +81,20 @@ public class BrokerStartUp {
         CommonCache.setConsumeQueueConsumeHandler(consumeQueueConsumeHandler);
     }
 
+    private static void initNameServerChannel() throws InterruptedException, UnknownHostException {
+        // 初始化连接 这个name server
+        CommonCache.getNameServerClient().initConnection();
+        // broker 给 这个name serve人发送注册事件
+        CommonCache.getNameServerClient().sendRegistryMsgToNameServer();
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException {
         initProperties();
 
-
-
-//        for (int i = 0; i < 10; i++) {
-//            MessageDTO messageDTO = new MessageDTO();
-//            messageDTO.setProducerId("producerA");
-//            messageDTO.setTopic(topic);
-//            messageDTO.setQueueId(0);
-//            messageDTO.setBody(("你好" + i).getBytes());
-//            messageDTO.setMessageId(UUID.randomUUID().toString());
-//            commitLogAppendHandler.appendMessageToCommitLog(messageDTO);
-//        }
-
+        initNameServerChannel();
 
     }
+
 
 //    public void testConsumeMessage() {
 //        String topic = "created_order_topic";

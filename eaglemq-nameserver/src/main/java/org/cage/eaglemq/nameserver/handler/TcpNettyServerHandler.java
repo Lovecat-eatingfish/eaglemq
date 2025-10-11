@@ -77,6 +77,7 @@ public class TcpNettyServerHandler extends SimpleChannelInboundHandler<TcpMsg> {
         eventBus.publish(event);
     }
 
+    // 这里比 使用心跳检查更快 更新name server 实例map的变化。
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         UnRegistryEvent unRegistryEvent = new UnRegistryEvent();

@@ -42,6 +42,11 @@ public class GlobalPropertiesLoader {
             throw new IllegalArgumentException("broker.queueAllocation.strategy 配置有误");
         }
         globalProperties.setBrokerQueueAllocationStrategy(strategy);
+        globalProperties.setNameserverIp(properties.getProperty("nameserver.ip"));
+        globalProperties.setNameserverPort(Integer.valueOf(properties.getProperty("nameserver.port")));
+        globalProperties.setNameserverUser(properties.getProperty("nameserver.user"));
+        globalProperties.setNameserverPassword(properties.getProperty("nameserver.password"));
+        globalProperties.setBrokerPort(Integer.valueOf(properties.getProperty("broker.port")));
         CommonCache.setGlobalProperties(globalProperties);
     }
 }

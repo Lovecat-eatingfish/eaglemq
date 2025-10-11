@@ -57,6 +57,7 @@ public class NameServerStarter {
         }));
         // 阻塞等待简历绑定关系
         ChannelFuture channelFuture = serverBootstrap.bind(port).sync();
+        log.info("name server 启动成功， 监听端口：{}", port);
         // 阻塞 netty 知道关闭
         channelFuture.channel().closeFuture().sync();
     }

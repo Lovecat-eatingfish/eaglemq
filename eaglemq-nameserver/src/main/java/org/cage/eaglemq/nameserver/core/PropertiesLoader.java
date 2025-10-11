@@ -1,6 +1,7 @@
 package org.cage.eaglemq.nameserver.core;
 
 import org.cage.eaglemq.common.constants.BrokerConstants;
+import org.cage.eaglemq.nameserver.common.CommonCache;
 import org.cage.eaglemq.nameserver.common.NameserverProperties;
 
 import java.io.File;
@@ -29,8 +30,7 @@ public class PropertiesLoader {
         nameserverProperties.setNameserverPwd(getStr("nameserver.password"));
         nameserverProperties.setNameserverUser(getStr("nameserver.user"));
         nameserverProperties.setNameserverPort(getInt("nameserver.port"));
-
-
+        CommonCache.setNameserverProperties(nameserverProperties);
     }
 
     private String getStr(String key) {

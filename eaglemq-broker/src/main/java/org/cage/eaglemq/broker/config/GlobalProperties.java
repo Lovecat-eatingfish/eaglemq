@@ -22,4 +22,11 @@ public class GlobalProperties {
      * @see org.cage.eaglemq.broker.enums.QueueAllocationStrategyEnum
      */
     private String brokerQueueAllocationStrategy;
+
+    //nameserver的属性
+    private String nameserverIp;
+    private Integer nameserverPort;
+    private String nameserverUser;
+    private String nameserverPassword;
+    private Integer brokerPort;
 }
