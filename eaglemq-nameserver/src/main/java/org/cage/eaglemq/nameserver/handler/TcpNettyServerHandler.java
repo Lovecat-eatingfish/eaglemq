@@ -64,9 +64,14 @@ public class TcpNettyServerHandler extends SimpleChannelInboundHandler<TcpMsg> {
             pullBrokerIpReqDTO.setRole(pullBrokerIpReqDTO.getRole());
             pullBrokerIpEvent.setBrokerClusterGroup(pullBrokerIpReqDTO.getBrokerClusterGroup());
             event = pullBrokerIpEvent;
+        } else if (NameServerEventCode.UN_REGISTRY.getCode() == code) {
+            UnRegistryEvent unRegistryEvent = new UnRegistryEvent();
+            unRegistryEvent.setChannelHandlerContext(channelHandlerContext);
+            event = unRegistryEvent;
         } else {
             TcpMsg responseTcpMsg = new TcpMsg(NameServerResponseCode.NOT_EXISTS_MESSAGE_TYPE.getCode(), NameServerResponseCode.NOT_EXISTS_MESSAGE_TYPE.getDesc().getBytes());
             channelHandlerContext.writeAndFlush(responseTcpMsg);
+            return;
         }
         event.setChannelHandlerContext(channelHandlerContext);
         eventBus.publish(event);
