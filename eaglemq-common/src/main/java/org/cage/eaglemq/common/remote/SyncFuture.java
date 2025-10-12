@@ -3,6 +3,7 @@ package org.cage.eaglemq.common.remote;
 import lombok.Data;
 import lombok.extern.apachecommons.CommonsLog;
 import org.cage.eaglemq.common.cache.NameServerSyncFutureManager;
+import org.cage.eaglemq.common.coder.TcpMsg;
 
 import java.util.concurrent.*;
 
@@ -18,13 +19,13 @@ import java.util.concurrent.*;
 @Data
 public class SyncFuture implements Future {
 
-    private Object response;
+    private TcpMsg response;
 
     private String messageId;
 
     private CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    public void setResponse(Object response) {
+    public void setResponse(TcpMsg response) {
         this.response = response;
         this.countDownLatch.countDown();
     }

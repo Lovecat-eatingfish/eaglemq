@@ -17,6 +17,14 @@ import lombok.extern.slf4j.Slf4j;
 public class NameserverProperties {
 
     private String nameserverUser;
+
     private String nameserverPwd;
+
     private Integer nameserverPort;
+
+    private String replicationMode;
+
+    private TraceReplicationProperties traceReplicationProperties;
+
+    private MasterSlaveReplicationProperties masterSlaveReplicationProperties;
 }

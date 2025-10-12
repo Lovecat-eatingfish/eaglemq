@@ -9,6 +9,8 @@ import org.cage.eaglemq.broker.core.ConsumeQueueAppendHandler;
 import org.cage.eaglemq.broker.core.ConsumeQueueConsumeHandler;
 import org.cage.eaglemq.broker.model.ConsumeQueueConsumeReqModel;
 import org.cage.eaglemq.broker.model.EagleMqTopicModel;
+import org.cage.eaglemq.broker.netty.broker.BrokerServer;
+import org.cage.eaglemq.broker.netty.broker.BrokerServerHandler;
 import org.cage.eaglemq.common.dto.ConsumeMsgCommitLogDTO;
 import org.cage.eaglemq.common.dto.MessageDTO;
 
@@ -86,31 +88,25 @@ public class BrokerStartUp {
         CommonCache.getNameServerClient().initConnection();
         // broker 给 这个name serve人发送注册事件
         CommonCache.getNameServerClient().sendRegistryMsgToNameServer();
+
+        // todo: 如果当前的broker 是slave 需要和 broker的master 节点建立联系
+    }
+
+    private static void initBrokerServer() throws InterruptedException {
+        BrokerServer brokerServer = new BrokerServer(CommonCache.getGlobalProperties().getBrokerPort());
+        brokerServer.startServer();
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
+        // 初始化 broker 的所有配置文件
         initProperties();
-
+        // 初始化连接 这个name server
         initNameServerChannel();
+        // todo: 开启消费者的 queueId 分重分配任务
+
+        // 开启broker 的服务功能
+        initBrokerServer();
 
     }
 
-
-//    public void testConsumeMessage() {
-//        String topic = "created_order_topic";
-//        String consumeGroup = "test-consume-group";
-//        int queueId = 0;
-//        ConsumeQueueConsumeHandler consumeQueueConsumeHandler = CommonCache.getConsumeQueueConsumeHandler();
-//        ConsumeQueueConsumeReqModel consumeQueueConsumeReqModel = new ConsumeQueueConsumeReqModel();
-//        consumeQueueConsumeReqModel.setTopic(topic);
-//        consumeQueueConsumeReqModel.setQueueId(queueId);
-//        consumeQueueConsumeReqModel.setConsumeGroup(consumeGroup);
-//        consumeQueueConsumeReqModel.setBatchSize(30);
-//        List<ConsumeMsgCommitLogDTO> result = consumeQueueConsumeHandler.consume(consumeQueueConsumeReqModel);
-//        for (ConsumeMsgCommitLogDTO consumeMsgCommitLogDTO : result) {
-//            System.out.println("consumeMsgCommitLogDTO==> " + consumeMsgCommitLogDTO);
-//            consumeQueueConsumeHandler.ack(topic, consumeGroup, queueId);
-//        }
-//        System.out.println("总共的数量： " + result.size());
-//    }
 }

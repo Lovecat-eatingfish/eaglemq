@@ -2,7 +2,9 @@ package org.cage.eaglemq.nameserver.core;
 
 import org.cage.eaglemq.common.constants.BrokerConstants;
 import org.cage.eaglemq.nameserver.common.CommonCache;
+import org.cage.eaglemq.nameserver.common.MasterSlaveReplicationProperties;
 import org.cage.eaglemq.nameserver.common.NameserverProperties;
+import org.cage.eaglemq.nameserver.common.TraceReplicationProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +32,17 @@ public class PropertiesLoader {
         nameserverProperties.setNameserverPwd(getStr("nameserver.password"));
         nameserverProperties.setNameserverUser(getStr("nameserver.user"));
         nameserverProperties.setNameserverPort(getInt("nameserver.port"));
+        nameserverProperties.setReplicationMode(getStrCanBeNull("nameserver.replication.mode"));
+        TraceReplicationProperties traceReplicationProperties = new TraceReplicationProperties();
+        traceReplicationProperties.setNextNode(getStrCanBeNull("nameserver.replication.trace.next.node"));
+        traceReplicationProperties.setPort(getIntCanBeNull("nameserver.replication.trace.port"));
+        nameserverProperties.setTraceReplicationProperties(traceReplicationProperties);
+        MasterSlaveReplicationProperties masterSlaveReplicationProperties = new MasterSlaveReplicationProperties();
+        masterSlaveReplicationProperties.setMaster(getStrCanBeNull("nameserver.replication.master"));
+        masterSlaveReplicationProperties.setRole(getStrCanBeNull("nameserver.replication.master.slave.role"));
+        masterSlaveReplicationProperties.setReplicationType(getStrCanBeNull("nameserver.replication.master.slave.replicationType"));
+        masterSlaveReplicationProperties.setPort(getInt("nameserver.replication.port"));
+        nameserverProperties.setMasterSlaveReplicationProperties(masterSlaveReplicationProperties);
         CommonCache.setNameserverProperties(nameserverProperties);
     }
 
@@ -44,5 +57,22 @@ public class PropertiesLoader {
     private Integer getInt(String key) {
         return Integer.valueOf(getStr(key));
     }
+
+    private String getStrCanBeNull(String key) {
+        String value = properties.getProperty(key);
+        if (value == null) {
+            return "";
+        }
+        return value;
+    }
+
+    private Integer getIntCanBeNull(String key) {
+        String intValue = getStr(key);
+        if (intValue.isEmpty()) {
+            return null;
+        }
+        return Integer.valueOf(intValue);
+    }
+
 
 }
