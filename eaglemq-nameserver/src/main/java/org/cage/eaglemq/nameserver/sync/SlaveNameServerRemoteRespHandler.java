@@ -1,4 +1,4 @@
-﻿package org.cage.eaglemq.nameserver.sync;
+package org.cage.eaglemq.nameserver.sync;
 
 import com.alibaba.fastjson2.JSON;
 import io.netty.channel.ChannelHandler;
@@ -9,10 +9,8 @@ import org.cage.eaglemq.common.coder.TcpMsg;
 import org.cage.eaglemq.common.dto.StartReplicationRespDTO;
 import org.cage.eaglemq.common.enums.NameServerEventCode;
 import org.cage.eaglemq.common.enums.NameServerResponseCode;
-import org.cage.eaglemq.common.event.Event;
 import org.cage.eaglemq.common.event.EventBus;
 import org.cage.eaglemq.common.remote.SyncFuture;
-import org.cage.eaglemq.common.replication.event.StartReplicationRespEvent;
 
 /**
  * ClassName: SlaveNameServerRemoteRespHandler

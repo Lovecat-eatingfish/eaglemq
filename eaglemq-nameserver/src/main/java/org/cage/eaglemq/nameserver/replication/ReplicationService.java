@@ -1,4 +1,4 @@
-﻿package org.cage.eaglemq.nameserver.replication;
+package org.cage.eaglemq.nameserver.replication;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
@@ -155,6 +155,7 @@ public class ReplicationService {
         nettyServerTask.start();
     }
 
+
     /**
      * 异步开启对目标进程的链接
      *
@@ -185,11 +186,17 @@ public class ReplicationService {
                     log.info("nameserver's replication connect application is closed");
                 }));
                 String[] addr = address.split(":");
+                log.info("nameserver's replication connect application on address: {}", address);
                 channelFuture = bootstrap.connect(addr[0], Integer.parseInt(addr[1])).sync();
+                if (!channelFuture.isSuccess()) {
+                    log.error("连接Master节点失败", channelFuture.cause());
+                    return;
+                }
                 //连接了master节点的channel对象，建议保存
                 channel = channelFuture.channel();
-                log.info("success connected to nameserver replication!");
                 CommonCache.setConnectNodeChannel(channel);
+                CommonCache.getCountDownLatch().countDown();
+                log.info("name server 从节点连接到 name server master 节点");
                 channel.closeFuture().sync();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);

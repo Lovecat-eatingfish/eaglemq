@@ -1,4 +1,4 @@
-﻿package org.cage.eaglemq.nameserver.replication;
+package org.cage.eaglemq.nameserver.replication;
 
 import com.alibaba.fastjson.JSON;
 import io.netty.channel.Channel;
@@ -42,7 +42,22 @@ public class SlaveReplicationHeartBeatTask extends ReplicationTask {
         TcpMsg startReplicationMsg = new TcpMsg(NameServerEventCode.START_REPLICATION.getCode(), JSON.toJSONBytes(startReplicationEvent));
 
         // 同步等待  master的结果
+        try {
+            CommonCache.getCountDownLatch().await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        // 在发送心跳数据前添加连接检查
+        Channel channel = CommonCache.getConnectNodeChannel();
+        if (channel == null || !channel.isActive()) {
+            log.error("与Master节点的连接未建立或已断开");
+            return;
+        }
+        log.info("准备发送START_REPLICATION消息，目标地址: {}",
+                CommonCache.getNameserverProperties().getMasterSlaveReplicationProperties().getMaster());
+        log.info("消息内容: {}", new String(startReplicationMsg.getBody()));
         TcpMsg startReplicationResTcpMsg = SyncSendMessageUtils.sendSyncMsg(startReplicationMsg, messageId);
+        log.info("从节点收到master的开始同步数据响应包: {}", startReplicationResTcpMsg);
         byte[] body = startReplicationResTcpMsg.getBody();
         StartReplicationRespDTO startReplicationRespDTO = JSON.parseObject(body, StartReplicationRespDTO.class);
         boolean success = startReplicationRespDTO.isSuccess();
@@ -54,7 +69,6 @@ public class SlaveReplicationHeartBeatTask extends ReplicationTask {
             try {
                 TimeUnit.SECONDS.sleep(3);
                 //发送数据给到主节点
-                Channel channel = CommonCache.getConnectNodeChannel();
                 TcpMsg heartBeatTcpMsg = new TcpMsg(NameServerEventCode.SLAVE_HEART_BEAT.getCode(), JSON.toJSONBytes(new SlaveHeartBeatEvent()));
                 channel.writeAndFlush(heartBeatTcpMsg);
                 log.info("从节点发送心跳数据给master");

@@ -1,5 +1,6 @@
 package org.cage.eaglemq.nameserver.core;
 
+import lombok.extern.slf4j.Slf4j;
 import org.cage.eaglemq.common.constants.BrokerConstants;
 import org.cage.eaglemq.nameserver.common.CommonCache;
 import org.cage.eaglemq.nameserver.common.MasterSlaveReplicationProperties;
@@ -20,6 +21,7 @@ import java.util.Properties;
  * @Date: 2025/10/11 上午12:29
  * @Version: 1.0
  */
+@Slf4j
 public class PropertiesLoader {
 
     Properties properties = new Properties();
@@ -40,6 +42,7 @@ public class PropertiesLoader {
         MasterSlaveReplicationProperties masterSlaveReplicationProperties = new MasterSlaveReplicationProperties();
         masterSlaveReplicationProperties.setMaster(getStrCanBeNull("nameserver.replication.master"));
         masterSlaveReplicationProperties.setRole(getStrCanBeNull("nameserver.replication.master.slave.role"));
+        log.info("该broker 节点角色：{}", masterSlaveReplicationProperties.getRole());
         masterSlaveReplicationProperties.setReplicationType(getStrCanBeNull("nameserver.replication.master.slave.replicationType"));
         masterSlaveReplicationProperties.setPort(getInt("nameserver.replication.port"));
         nameserverProperties.setMasterSlaveReplicationProperties(masterSlaveReplicationProperties);

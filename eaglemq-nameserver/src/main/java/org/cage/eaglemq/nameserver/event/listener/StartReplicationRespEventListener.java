@@ -1,7 +1,7 @@
-package org.cage.eaglemq.common.replication.listener;
+package org.cage.eaglemq.nameserver.event.listener;
 
 import org.cage.eaglemq.common.event.Listener;
-import org.cage.eaglemq.common.replication.event.StartReplicationRespEvent;
+import org.cage.eaglemq.nameserver.event.model.StartReplicationRespEvent;
 
 /**
  * ClassName: StartReplicationRespEventListener

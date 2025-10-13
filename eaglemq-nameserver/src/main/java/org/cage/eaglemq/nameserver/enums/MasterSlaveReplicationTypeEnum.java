@@ -12,4 +12,13 @@ public enum MasterSlaveReplicationTypeEnum {
     ASYNC("async", "异步复制"); //master -> slave * 2,客户端写入数据往master写入，数据写入到master的存储后，master的一个异步线程发送同步数据给到slave，快速通知客户端写入成功
     final String code;
     final String desc;
+
+    public static MasterSlaveReplicationTypeEnum of(String code) {
+        for (MasterSlaveReplicationTypeEnum value : MasterSlaveReplicationTypeEnum.values()) {
+            if (value.getCode().equals(code)) {
+                return value;
+            }
+        }
+        return null;
+    }
 }

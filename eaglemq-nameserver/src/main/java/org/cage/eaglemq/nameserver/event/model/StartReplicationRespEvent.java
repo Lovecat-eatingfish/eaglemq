@@ -1,4 +1,4 @@
-package org.cage.eaglemq.common.replication.event;
+package org.cage.eaglemq.nameserver.event.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -1,4 +1,4 @@
-﻿package org.cage.eaglemq.nameserver.event.listener;
+package org.cage.eaglemq.nameserver.event.listener;
 
 import com.alibaba.fastjson.JSON;
 import io.netty.channel.ChannelHandlerContext;
@@ -8,7 +8,6 @@ import org.cage.eaglemq.common.dto.StartReplicationRespDTO;
 import org.cage.eaglemq.common.enums.NameServerEventCode;
 import org.cage.eaglemq.common.enums.NameServerResponseCode;
 import org.cage.eaglemq.common.event.Listener;
-import org.cage.eaglemq.common.replication.event.StartReplicationRespEvent;
 import org.cage.eaglemq.nameserver.common.CommonCache;
 import org.cage.eaglemq.nameserver.event.model.StartReplicationEvent;
 import org.cage.eaglemq.nameserver.utils.NameserverUtils;

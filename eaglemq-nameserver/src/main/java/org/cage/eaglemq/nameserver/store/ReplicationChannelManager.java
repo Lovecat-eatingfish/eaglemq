@@ -1,7 +1,10 @@
-﻿package org.cage.eaglemq.nameserver.store;
+package org.cage.eaglemq.nameserver.store;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,4 +39,26 @@ public class ReplicationChannelManager {
     }
 
 
+    /**
+     * 返还有效连接
+     * @return
+     */
+    public Map<String, ChannelHandlerContext> getValidSlaveChannelMap() {
+        List<String> inValidChannelReqIdList = new ArrayList<>();
+        //判断当前采用的同步模式是哪种方式
+        for (String reqId : channelHandlerContextMap.keySet()) {
+            Channel slaveChannel = channelHandlerContextMap.get(reqId).channel();
+            if (!slaveChannel.isActive()) {
+                inValidChannelReqIdList.add(reqId);
+                continue;
+            }
+        }
+        if (!inValidChannelReqIdList.isEmpty()) {
+            for (String reqId : inValidChannelReqIdList) {
+                //移除不可用的channel
+                channelHandlerContextMap.remove(reqId);
+            }
+        }
+        return channelHandlerContextMap;
+    }
 }

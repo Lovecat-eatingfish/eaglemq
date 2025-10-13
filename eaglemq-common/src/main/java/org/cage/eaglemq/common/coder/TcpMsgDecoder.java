@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import org.cage.eaglemq.common.constants.BrokerConstants;
+import org.cage.eaglemq.common.constants.TcpConstants;
 
 import java.util.List;
 
@@ -19,26 +20,42 @@ import java.util.List;
 public class TcpMsgDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> in) throws Exception {
-        int readableBytes = byteBuf.readableBytes();
-        // 半包处理
-        if (readableBytes > 2 + 4 + 4) {
-            if (byteBuf.readShort() != BrokerConstants.DEFAULT_MAGIC_NUM) {
-                channelHandlerContext.channel();
-                return;
-            }
-            int code = byteBuf.readInt();
-            int len = byteBuf.readInt();
-            int readableByteLen = byteBuf.readableBytes();
-            // 粘包处理
-            if (readableByteLen > len) {
-                channelHandlerContext.close();
-                return;
-            }
-
-            byte[] body = new byte[len];
-            byteBuf.readBytes(body);
-            TcpMsg tcpMsg = new TcpMsg(code, body);
-            in.add(tcpMsg);
+        // 检查是否至少有magic number + code + len的字节数
+        if (byteBuf.readableBytes() < 2 + 4 + 4) {
+            // 可读字节数不足，等待更多数据
+            return;
         }
+
+        // 标记当前读位置，以便在数据不完整时回退
+        byteBuf.markReaderIndex();
+
+        // 读取magic number
+        if (byteBuf.readShort() != BrokerConstants.DEFAULT_MAGIC_NUM) {
+            // magic number不匹配，丢弃数据
+            channelHandlerContext.close();
+            return;
+        }
+
+        int code = byteBuf.readInt();
+        int len = byteBuf.readInt();
+
+        // 注意：需要考虑编码器添加的分隔符长度
+        int delimiterLen = TcpConstants.DEFAULT_DECODE_CHAR.getBytes().length;
+
+        // 检查是否有足够的字节读取body和分隔符
+        if (byteBuf.readableBytes() < len + delimiterLen) {
+            // 数据不完整，回退读位置，等待更多数据
+            byteBuf.resetReaderIndex();
+            return;
+        }
+
+        byte[] body = new byte[len];
+        byteBuf.readBytes(body);
+
+        // 跳过分隔符
+        byteBuf.skipBytes(delimiterLen);
+
+        TcpMsg tcpMsg = new TcpMsg(code, body);
+        in.add(tcpMsg);
     }
 }

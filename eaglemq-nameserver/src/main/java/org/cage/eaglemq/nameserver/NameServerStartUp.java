@@ -1,11 +1,13 @@
 package org.cage.eaglemq.nameserver;
 
+import io.netty.util.internal.StringUtil;
+import org.cage.eaglemq.common.enums.ReplicationRoleEnum;
 import org.cage.eaglemq.nameserver.common.CommonCache;
+import org.cage.eaglemq.nameserver.common.TraceReplicationProperties;
 import org.cage.eaglemq.nameserver.core.InValidServiceRemoveTask;
 import org.cage.eaglemq.nameserver.core.NameServerStarter;
 import org.cage.eaglemq.nameserver.enums.ReplicationModeEnum;
-import org.cage.eaglemq.nameserver.replication.ReplicationService;
-import org.cage.eaglemq.nameserver.replication.ReplicationTask;
+import org.cage.eaglemq.nameserver.replication.*;
 
 import java.io.IOException;
 
@@ -42,6 +44,27 @@ public class NameServerStartUp {
 //
 //        }
         ReplicationTask replicationTask = null;
+        //开启定时任务
+        if(replicationModeEnum == ReplicationModeEnum.MASTER_SLAVE) {
+            ReplicationRoleEnum roleEnum = ReplicationRoleEnum.of(CommonCache.getNameserverProperties().getMasterSlaveReplicationProperties().getRole());
+            if(roleEnum == ReplicationRoleEnum.MASTER) {
+                replicationTask = new MasterReplicationMsgSendTask("master-replication-msg-send-task");
+                replicationTask.startTaskAsync();
+            } else if (roleEnum == ReplicationRoleEnum.SLAVE) {
+                //发送链接主节点的请求
+                //开启心跳任务，发送给主节点
+                replicationTask = new SlaveReplicationHeartBeatTask("slave-replication-heart-beat-send-task");
+                replicationTask.startTaskAsync();
+            }
+        } else if (replicationModeEnum == ReplicationModeEnum.TRACE) {
+            //判断当前不是一个尾节点，开启一个复制数据的异步任务
+//            TraceReplicationProperties traceReplicationProperties = CommonCache.getNameserverProperties().getTraceReplicationProperties();
+//            if(!StringUtil.isNullOrEmpty(traceReplicationProperties.getNextNode())) {
+//                replicationTask = new NodeReplicationSendMsgTask("node-replication-msg-send-task");
+//                replicationTask.startTaskAsync();
+//            }
+        }
+//        CommonCache.setReplicationTask(replicationTask);
 
     }
 

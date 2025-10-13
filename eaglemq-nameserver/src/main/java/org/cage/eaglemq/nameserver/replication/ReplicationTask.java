@@ -1,4 +1,4 @@
-﻿package org.cage.eaglemq.nameserver.replication;
+package org.cage.eaglemq.nameserver.replication;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,9 +21,7 @@ public abstract class ReplicationTask {
     }
 
     public void startTaskAsync() {
-        Thread thread = new Thread(() -> {
-            startTask();
-        });
+        Thread thread = new Thread(this::startTask);
         thread.setName(taskName);
         thread.start();
     }

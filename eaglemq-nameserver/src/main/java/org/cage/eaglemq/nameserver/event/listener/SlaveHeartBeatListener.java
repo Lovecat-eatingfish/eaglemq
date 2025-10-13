@@ -1,4 +1,4 @@
-﻿package org.cage.eaglemq.nameserver.event.listener;
+package org.cage.eaglemq.nameserver.event.listener;
 
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;

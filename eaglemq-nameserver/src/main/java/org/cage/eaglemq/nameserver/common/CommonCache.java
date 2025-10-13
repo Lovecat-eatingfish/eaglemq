@@ -1,9 +1,16 @@
 package org.cage.eaglemq.nameserver.common;
 
 import io.netty.channel.Channel;
+import org.cage.eaglemq.common.dto.NodeAckDTO;
+import org.cage.eaglemq.common.dto.SlaveAckDTO;
 import org.cage.eaglemq.nameserver.core.PropertiesLoader;
 import org.cage.eaglemq.nameserver.store.ReplicationChannelManager;
+import org.cage.eaglemq.nameserver.store.ReplicationMsgQueueManager;
 import org.cage.eaglemq.nameserver.store.ServiceInstanceManager;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * ClassName: CommonCache
@@ -29,6 +36,49 @@ public class CommonCache {
 
     // mater 节点管理从节点的handler
     private static ReplicationChannelManager replicationChannelManager = new ReplicationChannelManager();
+
+    // 主从同步的数据管理者
+    private static ReplicationMsgQueueManager replicationMsgQueueManager = new ReplicationMsgQueueManager();
+
+    // 链式复制的ack map管理者
+    private static Map<String, NodeAckDTO> nodeAckMap = new ConcurrentHashMap<>();
+
+    // 主从复制 ack map管理者
+    private static Map<String, SlaveAckDTO> ackMap = new ConcurrentHashMap<>();
+
+    private static CountDownLatch countDownLatch = new CountDownLatch(1);
+
+    public static CountDownLatch getCountDownLatch() {
+        return countDownLatch;
+    }
+
+    public static void setCountDownLatch(CountDownLatch countDownLatch) {
+        CommonCache.countDownLatch = countDownLatch;
+    }
+
+    public static Map<String, NodeAckDTO> getNodeAckMap() {
+        return nodeAckMap;
+    }
+
+    public static void setNodeAckMap(Map<String, NodeAckDTO> nodeAckMap) {
+        CommonCache.nodeAckMap = nodeAckMap;
+    }
+
+    public static Map<String, SlaveAckDTO> getAckMap() {
+        return ackMap;
+    }
+
+    public static void setAckMap(Map<String, SlaveAckDTO> ackMap) {
+        CommonCache.ackMap = ackMap;
+    }
+
+    public static ReplicationMsgQueueManager getReplicationMsgQueueManager() {
+        return replicationMsgQueueManager;
+    }
+
+    public static void setReplicationMsgQueueManager(ReplicationMsgQueueManager replicationMsgQueueManager) {
+        CommonCache.replicationMsgQueueManager = replicationMsgQueueManager;
+    }
 
     public static ReplicationChannelManager getReplicationChannelManager() {
         return replicationChannelManager;
