@@ -29,4 +29,13 @@ public class GlobalProperties {
     private String nameserverUser;
     private String nameserverPassword;
     private Integer brokerPort;
+
+
+    //重平衡策略
+    private String reBalanceStrategy;
+
+    //集群配置相关属性
+    private String brokerClusterMode;
+    private String brokerClusterRole;
+    private String brokerClusterGroup;
 }

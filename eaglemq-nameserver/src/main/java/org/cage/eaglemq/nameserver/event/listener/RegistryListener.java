@@ -10,9 +10,14 @@ import org.cage.eaglemq.common.dto.ServiceRegistryRespDTO;
 import org.cage.eaglemq.common.enums.NameServerResponseCode;
 import org.cage.eaglemq.common.event.Listener;
 import org.cage.eaglemq.nameserver.common.CommonCache;
+import org.cage.eaglemq.nameserver.enums.ReplicationModeEnum;
+import org.cage.eaglemq.nameserver.enums.ReplicationMsgTypeEnum;
 import org.cage.eaglemq.nameserver.event.model.RegistryEvent;
+import org.cage.eaglemq.nameserver.event.model.ReplicationMsgEvent;
 import org.cage.eaglemq.nameserver.store.ServiceInstance;
 import org.cage.eaglemq.nameserver.utils.NameserverUtils;
+
+import java.util.UUID;
 
 /**
  * ClassName: RegitryListener
@@ -30,9 +35,10 @@ public class RegistryListener implements Listener<RegistryEvent> {
         //安全认证
         boolean isVerify = NameserverUtils.isVerify(event.getUser(), event.getPassword());
         ChannelHandlerContext channelHandlerContext = event.getChannelHandlerContext();
+        String registerMessageId = event.getMsgId();
         if (!isVerify) {
             ServiceRegistryRespDTO registryRespDTO = new ServiceRegistryRespDTO();
-            registryRespDTO.setMsgId(event.getMsgId());
+            registryRespDTO.setMsgId(registerMessageId);
             TcpMsg tcpMsg = new TcpMsg(NameServerResponseCode.ERROR_USER_OR_PASSWORD.getCode(),
                     JSON.toJSONBytes(registryRespDTO));
             channelHandlerContext.writeAndFlush(tcpMsg);
@@ -40,7 +46,7 @@ public class RegistryListener implements Listener<RegistryEvent> {
             throw new IllegalAccessException("error account to connected!");
         }
 
-        log.info("注册事件接收:{}", JSON.toJSONString(event));
+//        log.info("注册事件接收:{}", JSON.toJSONString(event));
         channelHandlerContext.attr(AttributeKey.valueOf(TcpConstants.CLIENT_LOG)).set(event.getIp() + ":" + event.getPort());
         ServiceInstance serviceInstance = new ServiceInstance();
         serviceInstance.setIp(event.getIp());
@@ -50,10 +56,35 @@ public class RegistryListener implements Listener<RegistryEvent> {
         serviceInstance.setFirstRegistryTime(System.currentTimeMillis());
         CommonCache.getServiceInstanceManager().put(serviceInstance);
 
-        String messageId = event.getMsgId();
-        ServiceRegistryRespDTO serviceRegistryRespDTO = new ServiceRegistryRespDTO();
-        serviceRegistryRespDTO.setMsgId(messageId);
-        TcpMsg tcpMsg = new TcpMsg(NameServerResponseCode.REGISTRY_SUCCESS.getCode(), JSON.toJSONBytes(serviceRegistryRespDTO));
-        channelHandlerContext.writeAndFlush(tcpMsg);
+//        String messageId = event.getMsgId();
+//        ServiceRegistryRespDTO serviceRegistryRespDTO = new ServiceRegistryRespDTO();
+//        serviceRegistryRespDTO.setMsgId(messageId);
+//        TcpMsg tcpMsg = new TcpMsg(NameServerResponseCode.REGISTRY_SUCCESS.getCode(), JSON.toJSONBytes(serviceRegistryRespDTO));
+//        channelHandlerContext.writeAndFlush(tcpMsg);
+
+        ReplicationModeEnum replicationModeEnum = ReplicationModeEnum.of(CommonCache.getNameserverProperties().getReplicationMode());
+        if (replicationModeEnum == null) {
+            //单机架构，直接返回注册成功
+            String msgId = registerMessageId;
+            ServiceRegistryRespDTO serviceRegistryRespDTO = new ServiceRegistryRespDTO();
+            serviceRegistryRespDTO.setMsgId(msgId);
+            TcpMsg tcpMsg = new TcpMsg(NameServerResponseCode.REGISTRY_SUCCESS.getCode(),
+                    JSON.toJSONBytes(serviceRegistryRespDTO));
+            channelHandlerContext.writeAndFlush(tcpMsg);
+            return;
+        }
+
+        //如果当前是主从复制模式，而且当前角色是主节点，那么就往队列里面防元素
+
+        ReplicationMsgEvent replicationMsgEvent = new ReplicationMsgEvent();
+        replicationMsgEvent.setServiceInstance(serviceInstance);
+        String eventMessageId = UUID.randomUUID().toString();
+        replicationMsgEvent.setMsgId(eventMessageId);
+        replicationMsgEvent.setChannelHandlerContext(event.getChannelHandlerContext());
+        replicationMsgEvent.setType(ReplicationMsgTypeEnum.REGISTRY.getCode());
+        CommonCache.getReplicationMsgQueueManager().put(replicationMsgEvent);
+
+        // 管理对应关系
+        CommonCache.getRegisterMessageToReplicationEventIdMapManager().put(eventMessageId, registerMessageId);
     }
 }

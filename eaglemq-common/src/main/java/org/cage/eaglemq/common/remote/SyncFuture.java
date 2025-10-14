@@ -19,13 +19,13 @@ import java.util.concurrent.*;
 @Data
 public class SyncFuture implements Future {
 
-    private TcpMsg response;
+    private Object response;
 
     private String messageId;
 
     private CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    public void setResponse(TcpMsg response) {
+    public void setResponse(Object response) {
         this.response = response;
         this.countDownLatch.countDown();
     }

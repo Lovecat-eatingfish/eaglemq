@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.cage.eaglemq.common.cache.NameServerSyncFutureManager;
 import org.cage.eaglemq.common.coder.TcpMsg;
 import org.cage.eaglemq.common.dto.HeartBeatDTO;
@@ -21,6 +22,7 @@ import org.cage.eaglemq.common.enums.NameServerResponseCode;
  * @Date: 2025/10/11 上午10:44
  * @Version: 1.0
  */
+@Slf4j
 @ChannelHandler.Sharable
 public class NameServerRemoteRespHandler extends SimpleChannelInboundHandler<TcpMsg> {
     @Override
@@ -30,6 +32,10 @@ public class NameServerRemoteRespHandler extends SimpleChannelInboundHandler<Tcp
         if (NameServerResponseCode.REGISTRY_SUCCESS.getCode() == code) {
             //msgId
             ServiceRegistryRespDTO serviceRegistryRespDTO = JSON.parseObject(tcpMsg.getBody(), ServiceRegistryRespDTO.class);
+//            if (serviceRegistryRespDTO.getMsgId() == null) {
+//                log.info("");
+//                return;
+//            }
             SyncFuture syncFuture = NameServerSyncFutureManager.get(serviceRegistryRespDTO.getMsgId());
             if (syncFuture != null) {
                 syncFuture.setResponse(tcpMsg);

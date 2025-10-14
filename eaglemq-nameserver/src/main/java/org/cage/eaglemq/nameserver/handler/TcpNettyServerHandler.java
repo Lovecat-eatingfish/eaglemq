@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.internal.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.cage.eaglemq.common.coder.TcpMsg;
 import org.cage.eaglemq.common.dto.HeartBeatDTO;
 import org.cage.eaglemq.common.dto.PullBrokerIpReqDTO;
@@ -20,6 +21,7 @@ import org.cage.eaglemq.nameserver.event.model.UnRegistryEvent;
 
 import java.net.InetSocketAddress;
 
+@Slf4j
 @ChannelHandler.Sharable
 public class TcpNettyServerHandler extends SimpleChannelInboundHandler<TcpMsg> {
     private EventBus eventBus;
@@ -31,6 +33,7 @@ public class TcpNettyServerHandler extends SimpleChannelInboundHandler<TcpMsg> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, TcpMsg tcpMsg) throws Exception {
+//        log.info("name server 服务节点：{} 收到消息：{}", channelHandlerContext.channel().remoteAddress(), tcpMsg);
         int code = tcpMsg.getCode();
         byte[] body = tcpMsg.getBody();
         Event event = null;
@@ -57,11 +60,14 @@ public class TcpNettyServerHandler extends SimpleChannelInboundHandler<TcpMsg> {
             HeartBeatDTO heartBeatDTO = JSON.parseObject(body, HeartBeatDTO.class);
             HeartBeatEvent heartBeatEvent = new HeartBeatEvent();
             heartBeatEvent.setMsgId(heartBeatDTO.getMsgId());
+            heartBeatEvent.setMsgId(heartBeatDTO.getMsgId());
             event = heartBeatEvent;
         } else if (NameServerEventCode.PULL_BROKER_IP_LIST.getCode() == code) {
             PullBrokerIpReqDTO pullBrokerIpReqDTO = JSON.parseObject(body, PullBrokerIpReqDTO.class);
             PullBrokerIpEvent pullBrokerIpEvent = new PullBrokerIpEvent();
-            pullBrokerIpReqDTO.setRole(pullBrokerIpReqDTO.getRole());
+            pullBrokerIpEvent.setMsgId(pullBrokerIpReqDTO.getMsgId());
+            String role = pullBrokerIpReqDTO.getRole();
+            pullBrokerIpEvent.setRole(role);
             pullBrokerIpEvent.setBrokerClusterGroup(pullBrokerIpReqDTO.getBrokerClusterGroup());
             event = pullBrokerIpEvent;
         } else if (NameServerEventCode.UN_REGISTRY.getCode() == code) {
@@ -84,5 +90,11 @@ public class TcpNettyServerHandler extends SimpleChannelInboundHandler<TcpMsg> {
         unRegistryEvent.setChannelHandlerContext(ctx);
         eventBus.publish(unRegistryEvent);
         super.channelInactive(ctx);
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        log.info("{} 连接成功", ctx.channel().remoteAddress());
+        super.channelActive(ctx);
     }
 }

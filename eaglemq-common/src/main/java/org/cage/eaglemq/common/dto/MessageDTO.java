@@ -27,7 +27,7 @@ public class MessageDTO {
     private String topic;
 
     // 发送的目标 queueId
-    private int queueId = -1;
+    private int queueId = 0;
 
     // 消息id 可以去重、消息的唯一表示
     private String messageId;

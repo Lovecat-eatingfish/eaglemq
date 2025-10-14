@@ -10,4 +10,14 @@ import org.cage.eaglemq.common.event.Event;
  */
 public class SlaveReplicationMsgAckEvent extends Event {
 
+    private String registerMessageId;
+
+    public String getRegisterMessageId() {
+        return registerMessageId;
+    }
+
+    public SlaveReplicationMsgAckEvent setRegisterMessageId(String registerMessageId) {
+        this.registerMessageId = registerMessageId;
+        return this;
+    }
 }

@@ -62,7 +62,26 @@ public class NameServerNettyRemoteClient {
     }
 
     public TcpMsg sendSyncMsg(TcpMsg tcpMsg, String messageId) {
-        this.channel.writeAndFlush(tcpMsg);
+
+        Channel channel = this.channel;
+        if (channel == null) {
+            log.error("与NameServer的连接为null");
+            throw new RuntimeException("与NameServer的连接为null");
+        }
+
+
+        if (!channel.isActive()) {
+            log.error("与NameServer的连接已断开");
+            throw new RuntimeException("与NameServer的连接已断开");
+        }
+
+        if (!channel.isWritable()) {
+            log.error("与NameServer的连接不可写");
+            throw new RuntimeException("与NameServer的连接不可写");
+        }
+
+        ChannelFuture future = channel.writeAndFlush(tcpMsg);
+
         SyncFuture syncFuture = new SyncFuture();
         syncFuture.setMessageId(messageId);
         NameServerSyncFutureManager.put(messageId, syncFuture);
@@ -72,4 +91,5 @@ public class NameServerNettyRemoteClient {
             throw new RuntimeException(e);
         }
     }
+
 }

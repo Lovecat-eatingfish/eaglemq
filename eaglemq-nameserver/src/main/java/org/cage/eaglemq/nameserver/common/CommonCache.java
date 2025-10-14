@@ -48,6 +48,16 @@ public class CommonCache {
 
     private static CountDownLatch countDownLatch = new CountDownLatch(1);
 
+    private static RegisterMessageToReplicationEventIdMapManager registerMessageToReplicationEventIdMapManager = new RegisterMessageToReplicationEventIdMapManager();
+
+    public static RegisterMessageToReplicationEventIdMapManager getRegisterMessageToReplicationEventIdMapManager() {
+        return registerMessageToReplicationEventIdMapManager;
+    }
+
+    public static void setRegisterMessageToReplicationEventIdMapManager(RegisterMessageToReplicationEventIdMapManager registerMessageToReplicationEventIdMapManager) {
+        CommonCache.registerMessageToReplicationEventIdMapManager = registerMessageToReplicationEventIdMapManager;
+    }
+
     public static CountDownLatch getCountDownLatch() {
         return countDownLatch;
     }

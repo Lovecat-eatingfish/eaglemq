@@ -11,8 +11,12 @@ import org.cage.eaglemq.common.dto.ServiceRegistryRespDTO;
 import org.cage.eaglemq.common.enums.NameServerResponseCode;
 import org.cage.eaglemq.common.event.Listener;
 import org.cage.eaglemq.nameserver.common.CommonCache;
+import org.cage.eaglemq.nameserver.enums.ReplicationMsgTypeEnum;
 import org.cage.eaglemq.nameserver.event.model.HeartBeatEvent;
+import org.cage.eaglemq.nameserver.event.model.ReplicationMsgEvent;
 import org.cage.eaglemq.nameserver.store.ServiceInstance;
+
+import java.util.UUID;
 
 /**
  * ClassName: HeartBeatEventListener
@@ -51,5 +55,14 @@ public class HeartBeatEventListener implements Listener<HeartBeatEvent> {
         heartBeatDTO.setMsgId(event.getMsgId());
         TcpMsg tcpMsg = new TcpMsg(NameServerResponseCode.HEART_BEAT_SUCCESS.getCode(), JSON.toJSONBytes(heartBeatDTO));
         channelHandlerContext.writeAndFlush(tcpMsg);
+
+
+        // 吸入数据同步对象
+        ReplicationMsgEvent replicationMsgEvent = new ReplicationMsgEvent();
+        replicationMsgEvent.setServiceInstance(serviceInstance);
+        replicationMsgEvent.setMsgId(UUID.randomUUID().toString());
+        replicationMsgEvent.setChannelHandlerContext(event.getChannelHandlerContext());
+        replicationMsgEvent.setType(ReplicationMsgTypeEnum.HEART_BEAT.getCode());
+        CommonCache.getReplicationMsgQueueManager().put(replicationMsgEvent);
     }
 }

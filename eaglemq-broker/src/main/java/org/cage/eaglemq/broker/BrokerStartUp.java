@@ -11,8 +11,10 @@ import org.cage.eaglemq.broker.model.ConsumeQueueConsumeReqModel;
 import org.cage.eaglemq.broker.model.EagleMqTopicModel;
 import org.cage.eaglemq.broker.netty.broker.BrokerServer;
 import org.cage.eaglemq.broker.netty.broker.BrokerServerHandler;
+import org.cage.eaglemq.broker.slave.SlaveSyncService;
 import org.cage.eaglemq.common.dto.ConsumeMsgCommitLogDTO;
 import org.cage.eaglemq.common.dto.MessageDTO;
+import org.cage.eaglemq.common.enums.BrokerClusterModeEnum;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -42,6 +44,7 @@ public class BrokerStartUp {
     private static CommitLogAppendHandler commitLogAppendHandler;
 
     private static ConsumeQueueAppendHandler consumeQueueAppendHandler;
+
 
 
     private static void initProperties() throws IOException {
@@ -88,8 +91,6 @@ public class BrokerStartUp {
         CommonCache.getNameServerClient().initConnection();
         // broker 给 这个name serve人发送注册事件
         CommonCache.getNameServerClient().sendRegistryMsgToNameServer();
-
-        // todo: 如果当前的broker 是slave 需要和 broker的master 节点建立联系
     }
 
     private static void initBrokerServer() throws InterruptedException {
@@ -97,16 +98,35 @@ public class BrokerStartUp {
         brokerServer.startServer();
     }
 
+    private static void tryConnectBrokerMaster() {
+        if (!BrokerClusterModeEnum.MASTER_SLAVE.getCode().equals(CommonCache.getGlobalProperties().getBrokerClusterMode())
+                || "master".equals(CommonCache.getGlobalProperties().getBrokerClusterRole())) {
+            return;
+        }
+
+        String masterAddress = CommonCache.getNameServerClient().queryBrokerMasterAddress();
+        if(masterAddress != null) {
+            //尝试链接主broker
+            SlaveSyncService slaveSyncService = new SlaveSyncService();
+            boolean connectionStat = slaveSyncService.connectMasterBrokerNode(masterAddress);
+            if(connectionStat) {
+                slaveSyncService.sendStartSyncMsg();
+            }
+        }
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException {
         // 初始化 broker 的所有配置文件
         initProperties();
         // 初始化连接 这个name server
         initNameServerChannel();
-        // todo: 开启消费者的 queueId 分重分配任务
 
+        tryConnectBrokerMaster();
+        // todo: 开启消费者的 queueId 分重分配任务
         // 开启broker 的服务功能
         initBrokerServer();
 
     }
+
 
 }

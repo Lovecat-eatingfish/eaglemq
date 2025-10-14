@@ -29,7 +29,7 @@ public class MasterReplicationServerHandler extends SimpleChannelInboundHandler<
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, TcpMsg tcpMsg) throws Exception {
-        log.info("master端收到从节点的消息: {}", tcpMsg);
+//        log.info("master端收到从节点的消息: {}", tcpMsg);
         int code = tcpMsg.getCode();
         byte[] body = tcpMsg.getBody();
         //从节点发起链接，在master端通过密码验证，建立链接
@@ -45,18 +45,19 @@ public class MasterReplicationServerHandler extends SimpleChannelInboundHandler<
         } else {
             return;
         }
+        event.setChannelHandlerContext(channelHandlerContext);
         eventBus.publish(event);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        log.info("有从节点连接到Master: {}", ctx.channel().remoteAddress());
+//        log.info("有从节点连接到Master: {}", ctx.channel().remoteAddress());
         super.channelActive(ctx);
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        log.info("Master收到原始消息: {}", msg);
+//        log.info("Master收到原始消息: {}", msg);
         super.channelRead(ctx, msg);
     }
 }

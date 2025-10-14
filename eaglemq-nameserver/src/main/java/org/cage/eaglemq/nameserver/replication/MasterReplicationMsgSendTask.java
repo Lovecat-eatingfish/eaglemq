@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.cage.eaglemq.common.coder.TcpMsg;
+import org.cage.eaglemq.common.dto.ServiceRegistryRespDTO;
 import org.cage.eaglemq.common.dto.SlaveAckDTO;
 import org.cage.eaglemq.common.enums.NameServerEventCode;
 import org.cage.eaglemq.common.enums.NameServerResponseCode;
@@ -12,6 +13,8 @@ import org.cage.eaglemq.nameserver.common.MasterSlaveReplicationProperties;
 import org.cage.eaglemq.nameserver.enums.MasterSlaveReplicationTypeEnum;
 import org.cage.eaglemq.nameserver.event.model.ReplicationMsgEvent;
 import org.cage.eaglemq.nameserver.store.ReplicationMsgQueueManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,6 +30,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @Description 主从同步专用的数据发送任务
  */
 public class MasterReplicationMsgSendTask extends ReplicationTask {
+
+    private static final Logger log = LoggerFactory.getLogger(MasterReplicationMsgSendTask.class);
 
     public MasterReplicationMsgSendTask(String taskName) {
         super(taskName);
@@ -44,6 +49,7 @@ public class MasterReplicationMsgSendTask extends ReplicationTask {
 
         while (true) {
             try {
+                log.info("MasterReplicationMsgSendTask start to send msg to slave");
                 ReplicationMsgEvent replicationMsgEvent = CommonCache.getReplicationMsgQueueManager().getReplicationMsgQueue().take();
                 // 从事件中获取的就是 broker 发送过来的  channel 就是broker 和  master 的name server 通信的channel
                 Channel brokerChannel = replicationMsgEvent.getChannelHandlerContext().channel();
@@ -54,7 +60,15 @@ public class MasterReplicationMsgSendTask extends ReplicationTask {
                 int validSlaveChannelCount = channelHandlerContextMap.keySet().size();
                 if (replicationTypeEnum == MasterSlaveReplicationTypeEnum.ASYNC) {
                     this.sendMsgToSlave(replicationMsgEvent);
-                    brokerChannel.writeAndFlush(new TcpMsg(NameServerResponseCode.REGISTRY_SUCCESS.getCode(), NameServerResponseCode.REGISTRY_SUCCESS.getDesc().getBytes()));
+                    String eventMsgId = replicationMsgEvent.getMsgId();
+
+                    String registerMessageId = CommonCache.getRegisterMessageToReplicationEventIdMapManager().get(eventMsgId);
+                    if (registerMessageId == null) {
+                        continue;
+                    }
+                    ServiceRegistryRespDTO serviceRegistryRespDTO = new ServiceRegistryRespDTO();
+                    serviceRegistryRespDTO.setMsgId(registerMessageId);
+                    brokerChannel.writeAndFlush(new TcpMsg(NameServerResponseCode.REGISTRY_SUCCESS.getCode(), com.alibaba.fastjson2.JSON.toJSONBytes(serviceRegistryRespDTO)));
                 } else if (replicationTypeEnum == MasterSlaveReplicationTypeEnum.SYNC) {
                     //需要接收到多少个ack的次数
                     this.inputMsgToAckMap(replicationMsgEvent, validSlaveChannelCount);

@@ -26,6 +26,8 @@ public class ReplicationMsgEventListener implements Listener<ReplicationMsgEvent
         CommonCache.getServiceInstanceManager().put(serviceInstance);
         SlaveReplicationMsgAckEvent slaveReplicationMsgAckEvent = new SlaveReplicationMsgAckEvent();
         slaveReplicationMsgAckEvent.setMsgId(event.getMsgId());
+        String registerMessageId = CommonCache.getRegisterMessageToReplicationEventIdMapManager().get(event.getMsgId());
+        slaveReplicationMsgAckEvent.setRegisterMessageId(registerMessageId);
         event.getChannelHandlerContext().channel().writeAndFlush(new TcpMsg(NameServerEventCode.SLAVE_REPLICATION_ACK_MSG.ordinal(),
                 JSON.toJSONBytes(slaveReplicationMsgAckEvent)));
     }

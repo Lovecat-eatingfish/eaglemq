@@ -1,6 +1,8 @@
 package org.cage.eaglemq.nameserver.event.listener;
 
+import com.alibaba.fastjson2.JSON;
 import org.cage.eaglemq.common.coder.TcpMsg;
+import org.cage.eaglemq.common.dto.ServiceRegistryRespDTO;
 import org.cage.eaglemq.common.dto.SlaveAckDTO;
 import org.cage.eaglemq.common.enums.NameServerResponseCode;
 import org.cage.eaglemq.common.event.Listener;
@@ -29,7 +31,11 @@ public class SlaveReplicationMsgAckEventListener implements Listener<SlaveReplic
         //如果是半同步复制模式
         if (currentAckTime == 0) {
             CommonCache.getAckMap().remove(slaveAckMsgId);
-            slaveAckDTO.getBrokerChannel().writeAndFlush(new TcpMsg(NameServerResponseCode.REGISTRY_SUCCESS.getCode(), NameServerResponseCode.REGISTRY_SUCCESS.getDesc().getBytes()));
+
+            String registerMessageId = event.getRegisterMessageId();
+            ServiceRegistryRespDTO serviceRegistryRespDTO = new ServiceRegistryRespDTO();
+            serviceRegistryRespDTO.setMsgId(registerMessageId);
+            slaveAckDTO.getBrokerChannel().writeAndFlush(new TcpMsg(NameServerResponseCode.REGISTRY_SUCCESS.getCode(), JSON.toJSONBytes(serviceRegistryRespDTO)));
         }
     }
 }

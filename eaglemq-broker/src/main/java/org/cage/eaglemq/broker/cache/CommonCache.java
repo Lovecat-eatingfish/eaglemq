@@ -1,5 +1,6 @@
 package org.cage.eaglemq.broker.cache;
 
+import io.netty.channel.ChannelHandlerContext;
 import org.cage.eaglemq.broker.config.GlobalProperties;
 import org.cage.eaglemq.broker.core.*;
 import org.cage.eaglemq.broker.model.*;
@@ -7,6 +8,7 @@ import org.cage.eaglemq.broker.netty.nameserver.HeartBeatTaskManager;
 import org.cage.eaglemq.broker.netty.nameserver.NameServerClient;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,6 +53,17 @@ public class CommonCache {
     // broker 的心跳任务管理者  一个broker 只有一个  一个broker 之和一个， 直接通过static 来控制个数
     private static HeartBeatTaskManager heartBeatTaskManager = new HeartBeatTaskManager();
 
+    // broker 主从同步的 channel集合
+    private static Map<String, ChannelHandlerContext> slaveChannelMap = new HashMap<>();
+
+
+    public static Map<String, ChannelHandlerContext> getSlaveChannelMap() {
+        return slaveChannelMap;
+    }
+
+    public static void setSlaveChannelMap(Map<String, ChannelHandlerContext> slaveChannelMap) {
+        CommonCache.slaveChannelMap = slaveChannelMap;
+    }
 
     public static HeartBeatTaskManager getHeartBeatTaskManager() {
         return heartBeatTaskManager;

@@ -47,6 +47,12 @@ public class GlobalPropertiesLoader {
         globalProperties.setNameserverUser(properties.getProperty("nameserver.user"));
         globalProperties.setNameserverPassword(properties.getProperty("nameserver.password"));
         globalProperties.setBrokerPort(Integer.valueOf(properties.getProperty("broker.port")));
+
+        globalProperties.setReBalanceStrategy(properties.getProperty("rebalance.strategy"));
+
+        globalProperties.setBrokerClusterGroup(properties.getProperty("broker.cluster.group"));
+        globalProperties.setBrokerClusterMode(properties.getProperty("broker.cluster.mode"));
+        globalProperties.setBrokerClusterRole(properties.getProperty("broker.cluster.role"));
         CommonCache.setGlobalProperties(globalProperties);
     }
 }
