@@ -6,10 +6,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
+import org.cage.eaglemq.broker.event.model.CreateTopicEvent;
 import org.cage.eaglemq.broker.event.model.PushMsgEvent;
 import org.cage.eaglemq.broker.event.model.StartSyncEvent;
 import org.cage.eaglemq.common.cache.BrokerServerSyncFutureManager;
 import org.cage.eaglemq.common.coder.TcpMsg;
+import org.cage.eaglemq.common.dto.CreateTopicReqDTO;
 import org.cage.eaglemq.common.dto.MessageDTO;
 import org.cage.eaglemq.common.dto.SlaveSyncRespDTO;
 import org.cage.eaglemq.common.dto.StartSyncReqDTO;
@@ -61,7 +63,11 @@ public class BrokerServerHandler extends SimpleChannelInboundHandler<TcpMsg> {
         } else if (BrokerEventCode.CONSUME_LATER_MSG.getCode() == code) {
 
         } else if (BrokerEventCode.CREATE_TOPIC.getCode() == code) {
-
+            CreateTopicReqDTO createTopicReqDTO = com.alibaba.fastjson2.JSON.parseObject(body, CreateTopicReqDTO.class);
+            CreateTopicEvent createTopicEvent = new CreateTopicEvent();
+            createTopicEvent.setCreateTopicReqDTO(createTopicReqDTO);
+            createTopicEvent.setMsgId(createTopicReqDTO.getMsgId());
+            event = createTopicEvent;
         } else if (BrokerEventCode.START_SYNC_MSG.getCode() == code) {
             StartSyncReqDTO startSyncReqDTO = JSON.parseObject(body, StartSyncReqDTO.class);
             StartSyncEvent startSyncEvent = new StartSyncEvent();

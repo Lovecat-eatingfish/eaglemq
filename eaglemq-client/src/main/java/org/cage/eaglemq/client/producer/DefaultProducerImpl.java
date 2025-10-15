@@ -4,12 +4,14 @@ import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.cage.eaglemq.client.netty.BrokerRemoteRespHandler;
+import org.cage.eaglemq.common.cache.CommonCache;
 import org.cage.eaglemq.common.coder.TcpMsg;
 import org.cage.eaglemq.common.dto.*;
 import org.cage.eaglemq.common.enums.*;
 import org.cage.eaglemq.common.event.EventBus;
 import org.cage.eaglemq.common.remote.BrokerNettyRemoteClient;
 import org.cage.eaglemq.common.remote.NameServerNettyRemoteClient;
+import org.cage.eaglemq.common.transaction.TransactionListener;
 import org.cage.eaglemq.common.utils.AssertUtils;
 
 import java.util.ArrayList;
@@ -41,6 +43,10 @@ public class DefaultProducerImpl implements Producer {
     private String brokerClusterGroup;
     private String brokerRole = "single";
 
+    private TransactionListener transactionListener;
+
+    private String producerId;
+
     //broker地址会有多个？broker节点会有多个，水平扩展的效果，水平扩展（存储内容会增加，承载压力也会大大增加，节点的选择问题）
     private List<String> brokerAddressList;
     private List<String> masterAddressList;
@@ -57,7 +63,11 @@ public class DefaultProducerImpl implements Producer {
         nameServerNettyRemoteClient.buildNameSererNettyConnection();
 
         boolean isRegistrySuccess = this.producerRegisterToNameServer();
+        this.setProducerId(UUID.randomUUID().toString());
+        if (this.getTransactionListener() != null) {
 
+            CommonCache.getTransactionListenerMap().put(this.getProducerId(), this.getTransactionListener());
+        }
         if (isRegistrySuccess) {
             this.startHeartBeatTask();
             this.fetchBrokerAddress();
@@ -105,9 +115,60 @@ public class DefaultProducerImpl implements Producer {
         return sendResult;
     }
 
+    @Override
+    public void sendAsync(MessageDTO messageDTO) {
+        BrokerNettyRemoteClient remoteClient = this.getBrokerNettyRemoteClient();
+        messageDTO.setSendWay(MessageSendWay.ASYNC.getCode());
+        TcpMsg tcpMsg = new TcpMsg(BrokerEventCode.PUSH_MSG.getCode(), JSON.toJSONBytes(messageDTO));
+        remoteClient.sendAsyncMsg(tcpMsg);
+    }
+
+
+    @Override
+    public SendResult sendTxMessage(MessageDTO messageDTO) {
+        AssertUtils.isNotNull(messageDTO, "messageDTO is null");
+        AssertUtils.isNotNull(transactionListener, "transactionListener is null");
+        String msgId = UUID.randomUUID().toString();
+        BrokerNettyRemoteClient remoteClient = this.getBrokerNettyRemoteClient();
+        messageDTO.setTxFlag(TxMessageFlagEnum.HALF_MSG.getCode());
+        messageDTO.setTopic(msgId);
+        messageDTO.setProducerId(this.getProducerId());
+        messageDTO.setSendWay(MessageSendWay.SYNC.getCode());
+        TcpMsg tcpMsg = new TcpMsg(BrokerEventCode.PUSH_MSG.getCode(), JSON.toJSONBytes(messageDTO));
+        TcpMsg responseMsg = remoteClient.sendSyncMsg(tcpMsg, msgId);
+        boolean isHalfMsgSendSuccess = (responseMsg != null && responseMsg.getCode() == BrokerResponseCode.HALF_MSG_SEND_SUCCESS.getCode());
+        if (!isHalfMsgSendSuccess) {
+            throw new RuntimeException("half msg send fail");
+        }
+        //本地事务代码的执行位置
+        LocalTransactionState localTransactionState = transactionListener.executeLocalTransaction(messageDTO);
+        AssertUtils.isNotNull(localTransactionState != null, "localTransactionState is null");
+        messageDTO.setLocalTxState(localTransactionState.getCode());
+
+        if (LocalTransactionState.COMMIT.equals(localTransactionState)) {
+            messageDTO.setTxFlag(TxMessageFlagEnum.REMAIN_HALF_ACK.getCode());
+            TcpMsg remainHalfAckMsg = new TcpMsg(BrokerEventCode.PUSH_MSG.getCode(), JSON.toJSONBytes(messageDTO));
+            TcpMsg remainHalfAckResp = remoteClient.sendSyncMsg(remainHalfAckMsg, msgId);
+            log.info("sendTxMessage remainHalfAckResp :{}", remainHalfAckResp);
+        } else if (LocalTransactionState.ROLLBACK.equals(localTransactionState)) {
+            //应该要通知到broker本地事务消息执行失败这个行为，不然的话broker会一直回调客户端查询状态，这里会有额外的性能损耗
+            messageDTO.setTxFlag(TxMessageFlagEnum.REMAIN_HALF_ACK.getCode());
+            TcpMsg rollbackMsg = new TcpMsg(BrokerEventCode.PUSH_MSG.getCode(), JSON.toJSONBytes(messageDTO));
+            TcpMsg rollbackAckResp = remoteClient.sendSyncMsg(rollbackMsg, msgId);
+            log.info("sendTxMessage rollbackAckResp :{}", rollbackAckResp);
+        } else if (LocalTransactionState.UNKNOW.equals(localTransactionState)) {
+            //等待broker回调查询进行状态判断
+        }
+        //本地事务执行环节
+        SendResult sendResult = new SendResult();
+        sendResult.setSendStatus(SendStatus.SUCCESS);
+        return sendResult;
+    }
+
     private BrokerNettyRemoteClient getBrokerNettyRemoteClient() {
         return new ArrayList<>(this.getBrokerNettyRemoteClientMap().values()).get(0);
     }
+
 
     private boolean producerRegisterToNameServer() {
         String messageId = UUID.randomUUID().toString();
