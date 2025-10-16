@@ -6,15 +6,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
-import org.cage.eaglemq.broker.event.model.CreateTopicEvent;
-import org.cage.eaglemq.broker.event.model.PushMsgEvent;
-import org.cage.eaglemq.broker.event.model.StartSyncEvent;
+import org.cage.eaglemq.broker.cache.CommonCache;
+import org.cage.eaglemq.broker.event.model.*;
 import org.cage.eaglemq.common.cache.BrokerServerSyncFutureManager;
 import org.cage.eaglemq.common.coder.TcpMsg;
-import org.cage.eaglemq.common.dto.CreateTopicReqDTO;
-import org.cage.eaglemq.common.dto.MessageDTO;
-import org.cage.eaglemq.common.dto.SlaveSyncRespDTO;
-import org.cage.eaglemq.common.dto.StartSyncReqDTO;
+import org.cage.eaglemq.common.dto.*;
 import org.cage.eaglemq.common.enums.BrokerEventCode;
 import org.cage.eaglemq.common.enums.BrokerResponseCode;
 import org.cage.eaglemq.common.event.Event;
@@ -57,9 +53,24 @@ public class BrokerServerHandler extends SimpleChannelInboundHandler<TcpMsg> {
             log.info("收到消息推送内容:{},message is {}", new String(messageDTO.getBody()), JSON.toJSONString(messageDTO));
             event = pushMsgEvent;
         } else if (BrokerEventCode.CONSUME_MSG.getCode() == code) {
-
+            ConsumeMsgReqDTO consumeMsgReqDTO = com.alibaba.fastjson2.JSON.parseObject(body, ConsumeMsgReqDTO.class);
+            InetSocketAddress inetSocketAddress = (InetSocketAddress) channelHandlerContext.channel().remoteAddress();
+            consumeMsgReqDTO.setIp(inetSocketAddress.getHostString());
+            consumeMsgReqDTO.setPort(inetSocketAddress.getPort());
+            ConsumeMsgEvent consumeMsgEvent = new ConsumeMsgEvent();
+            consumeMsgEvent.setConsumeMsgReqDTO(consumeMsgReqDTO);
+            consumeMsgEvent.setMsgId(consumeMsgReqDTO.getMsgId());
+            channelHandlerContext.attr(AttributeKey.valueOf("consumer-reqId")).set(consumeMsgReqDTO.getIp() + ":" + consumeMsgReqDTO.getPort());
+            event = consumeMsgEvent;
         } else if (BrokerEventCode.CONSUME_SUCCESS_MSG.getCode() == code) {
-
+            ConsumeMsgAckReqDTO consumeMsgAckReqDTO = com.alibaba.fastjson2.JSON.parseObject(body, ConsumeMsgAckReqDTO.class);
+            InetSocketAddress inetSocketAddress = (InetSocketAddress) channelHandlerContext.channel().remoteAddress();
+            consumeMsgAckReqDTO.setIp(inetSocketAddress.getHostString());
+            consumeMsgAckReqDTO.setPort(inetSocketAddress.getPort());
+            ConsumeMsgAckEvent consumeMsgAckEvent = new ConsumeMsgAckEvent();
+            consumeMsgAckEvent.setConsumeMsgAckReqDTO(consumeMsgAckReqDTO);
+            consumeMsgAckEvent.setMsgId(consumeMsgAckReqDTO.getMsgId());
+            event = consumeMsgAckEvent;
         } else if (BrokerEventCode.CONSUME_LATER_MSG.getCode() == code) {
 
         } else if (BrokerEventCode.CREATE_TOPIC.getCode() == code) {
@@ -83,4 +94,17 @@ public class BrokerServerHandler extends SimpleChannelInboundHandler<TcpMsg> {
             eventBus.publish(event);
         }
     }
+
+    // 如果有消费者 断开连接 需要删除这个消费者实例
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        //链接断开的时候，从重平衡池中移除
+        Object reqId = ctx.attr(AttributeKey.valueOf("consumer-reqId")).get();
+        if (reqId == null) {
+            return;
+        }
+        CommonCache.getConsumerInstancePool().removeFromInstancePool(String.valueOf(reqId));
+    }
+
 }

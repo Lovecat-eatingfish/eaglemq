@@ -6,11 +6,14 @@ import org.cage.eaglemq.broker.core.*;
 import org.cage.eaglemq.broker.model.*;
 import org.cage.eaglemq.broker.netty.nameserver.HeartBeatTaskManager;
 import org.cage.eaglemq.broker.netty.nameserver.NameServerClient;
+import org.cage.eaglemq.broker.reblalance.ConsumerInstance;
+import org.cage.eaglemq.broker.reblalance.ConsumerInstancePool;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -56,6 +59,28 @@ public class CommonCache {
     // broker 主从同步的 channel集合
     private static Map<String, ChannelHandlerContext> slaveChannelMap = new HashMap<>();
 
+    // topic: 多个消费组（key：消费组name： value： 消费者实例集合）
+    private static Map<String,Map<String,List<ConsumerInstance>>> consumeHoldMap = new ConcurrentHashMap<>();
+
+    // 消费者实例池
+    private static ConsumerInstancePool consumerInstancePool = new ConsumerInstancePool();
+
+
+    public static ConsumerInstancePool getConsumerInstancePool() {
+        return consumerInstancePool;
+    }
+
+    public static void setConsumerInstancePool(ConsumerInstancePool consumerInstancePool) {
+        CommonCache.consumerInstancePool = consumerInstancePool;
+    }
+
+    public static Map<String, Map<String, List<ConsumerInstance>>> getConsumeHoldMap() {
+        return consumeHoldMap;
+    }
+
+    public static void setConsumeHoldMap(Map<String, Map<String, List<ConsumerInstance>>> consumeHoldMap) {
+        CommonCache.consumeHoldMap = consumeHoldMap;
+    }
 
     public static Map<String, ChannelHandlerContext> getSlaveChannelMap() {
         return slaveChannelMap;

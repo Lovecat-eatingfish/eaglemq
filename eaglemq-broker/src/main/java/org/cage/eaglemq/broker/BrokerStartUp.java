@@ -115,6 +115,11 @@ public class BrokerStartUp {
         }
     }
 
+    //开启重平衡任务
+    private static void initReBalanceJob() {
+        CommonCache.getConsumerInstancePool().startReBalanceJob();
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException {
         // 初始化 broker 的所有配置文件
         initProperties();
@@ -122,7 +127,7 @@ public class BrokerStartUp {
         initNameServerChannel();
 
         tryConnectBrokerMaster();
-        // todo: 开启消费者的 queueId 分重分配任务
+        initReBalanceJob();
         // 开启broker 的服务功能
         initBrokerServer();
 

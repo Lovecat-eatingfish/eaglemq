@@ -1,3 +1,4 @@
 org.cage.eaglemq.broker.event.listener.PushMsgListener
 org.cage.eaglemq.broker.event.listener.StartSyncListener
 org.cage.eaglemq.broker.event.listener.CreateTopicListener
+org.cage.eaglemq.broker.event.listener.ConsumeMsgListener
