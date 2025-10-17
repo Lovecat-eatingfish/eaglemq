@@ -2,6 +2,7 @@ package org.cage.eaglemq.broker.timewheel;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.cage.eaglemq.broker.event.model.TimeWheelEvent;
 import org.cage.eaglemq.common.event.EventBus;
 
 import java.util.ArrayList;
@@ -87,6 +88,8 @@ public class TimeWheelModelManager {
                     executeSeconds++;
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             }
         });
@@ -95,7 +98,7 @@ public class TimeWheelModelManager {
     }
 
 
-    private void doSecondsTimeWheelExecute() {
+    private void doSecondsTimeWheelExecute() throws Exception {
         synchronized (secondsLock) {
 //            logger.info("doScan second slot:{}", secondsTimeWheelModel.getCurrent());
             int current = secondsTimeWheelModel.getCurrent();
@@ -119,7 +122,7 @@ public class TimeWheelModelManager {
         }
     }
 
-    private void doMinutesTimeWheelExecute() {
+    private void doMinutesTimeWheelExecute() throws Exception {
         synchronized (minutesLock) {
             log.info("doScan minutes slot:{}", minutesTimeWheelModel.getCurrent());
             int current = minutesTimeWheelModel.getCurrent();
@@ -137,7 +140,7 @@ public class TimeWheelModelManager {
                     delayMessageDTO.setData(timeWheelSlotModel.getData());
                     delayMessageDTO.setNextExecuteTime(timeWheelSlotModel.getNextExecuteTime());
                     add(delayMessageDTO);
-                    logger.info("added message to second timeWheel");
+                    log.info("added message to second timeWheel");
                 } else {
                     minutesTimeWheelModelList.add(timeWheelSlotModel);
                 }
