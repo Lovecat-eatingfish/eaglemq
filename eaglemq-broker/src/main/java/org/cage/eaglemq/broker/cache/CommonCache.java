@@ -8,6 +8,8 @@ import org.cage.eaglemq.broker.netty.nameserver.HeartBeatTaskManager;
 import org.cage.eaglemq.broker.netty.nameserver.NameServerClient;
 import org.cage.eaglemq.broker.reblalance.ConsumerInstance;
 import org.cage.eaglemq.broker.reblalance.ConsumerInstancePool;
+import org.cage.eaglemq.broker.timewheel.TimeWheelModelManager;
+import org.cage.eaglemq.common.dto.TxMessageAckModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,6 +67,28 @@ public class CommonCache {
     // 消费者实例池
     private static ConsumerInstancePool consumerInstancePool = new ConsumerInstancePool();
 
+    // 时间轮算法组件
+    private static TimeWheelModelManager timeWheelModelManager = new TimeWheelModelManager();
+
+    // 本地事务表
+    private static Map<String, TxMessageAckModel> txMessageAckModelMap = new ConcurrentHashMap<>();
+
+
+    public static Map<String, TxMessageAckModel> getTxMessageAckModelMap() {
+        return txMessageAckModelMap;
+    }
+
+    public static void setTxMessageAckModelMap(Map<String, TxMessageAckModel> txMessageAckModelMap) {
+        CommonCache.txMessageAckModelMap = txMessageAckModelMap;
+    }
+
+    public static TimeWheelModelManager getTimeWheelModelManager() {
+        return timeWheelModelManager;
+    }
+
+    public static void setTimeWheelModelManager(TimeWheelModelManager timeWheelModelManager) {
+        CommonCache.timeWheelModelManager = timeWheelModelManager;
+    }
 
     public static ConsumerInstancePool getConsumerInstancePool() {
         return consumerInstancePool;

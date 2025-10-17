@@ -36,7 +36,8 @@ public class MessageDTO {
     // 重试属性
     private boolean isRetry;
 
-    private int currentRetryTime;
+
+    private int currentRetryTimes;
 
     // 延迟属性
     private int delay = -1;
