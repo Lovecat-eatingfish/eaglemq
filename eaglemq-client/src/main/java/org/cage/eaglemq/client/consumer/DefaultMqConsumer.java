@@ -64,13 +64,15 @@ public class DefaultMqConsumer {
         nameServerNettyRemoteClient.buildNameSererNettyConnection();
 
         boolean isRegistrySuccess = this.doRegistry();
-        this.startHeartBeatTask();
-        this.fetchBrokerAddress();
-        this.creatRetryTopic();
-        this.startConsumeMsgTask(topic);
-        this.startConsumeMsgTask("retry%" + this.getConsumeGroup());
-        this.startRefreshBrokerAddressJob();
-        countDownLatch.await();
+        if (isRegistrySuccess) {
+            this.startHeartBeatTask();
+            this.fetchBrokerAddress();
+            this.creatRetryTopic();
+            this.startConsumeMsgTask(topic);
+            this.startConsumeMsgTask("retry%" + this.getConsumeGroup());
+            this.startRefreshBrokerAddressJob();
+            countDownLatch.await();
+        }
     }
 
     /**

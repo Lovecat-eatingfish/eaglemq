@@ -38,7 +38,6 @@ public class ReplicationMsgQueueManager {
             }
             this.sendMsgToQueue(replicationMsgEvent);
         }
-        // todo: 链式复制
 //        else if (replicationModeEnum == ReplicationModeEnum.TRACE) {
 //            TraceReplicationProperties traceReplicationProperties = CommonCache.getNameserverProperties().getTraceReplicationProperties();
 //            if (traceReplicationProperties.getNextNode() != null) {

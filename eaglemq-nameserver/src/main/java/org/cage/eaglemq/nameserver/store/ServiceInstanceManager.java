@@ -1,5 +1,6 @@
 package org.cage.eaglemq.nameserver.store;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,6 +15,13 @@ public class ServiceInstanceManager {
     public ServiceInstanceManager setServiceInstanceMap(Map<String, ServiceInstance> serviceInstanceMap) {
         this.serviceInstanceMap = serviceInstanceMap;
         return this;
+    }
+
+    public void reload(List<ServiceInstance> serviceInstanceList) {
+        serviceInstanceMap.clear();
+        for (ServiceInstance serviceInstance : serviceInstanceList) {
+            this.put(serviceInstance);
+        }
     }
 
     public void putIfExist(ServiceInstance serviceInstance) {

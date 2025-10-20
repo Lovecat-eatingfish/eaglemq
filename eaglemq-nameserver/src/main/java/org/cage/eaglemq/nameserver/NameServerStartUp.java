@@ -37,12 +37,7 @@ public class NameServerStartUp {
         //这里面会根据同步模式开启不同的netty进程
         replicationService.startReplicationTask(replicationModeEnum);
 
-        // todo ：完善的地方， 把心跳任务 和 发送同步数据包解耦：现在先把他写道一个里面去
-//        if (replicationModeEnum == ReplicationModeEnum.MASTER_SLAVE) {
-//
-//        }else {
-//
-//        }
+
         ReplicationTask replicationTask = null;
         //开启定时任务
         if(replicationModeEnum == ReplicationModeEnum.MASTER_SLAVE) {
